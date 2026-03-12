@@ -54,6 +54,7 @@ jobs:
           path: |
             ImmortalWrt/bin
             ImmortalWrt/dl # 下载的源码包（最核心，必缓存）
+            ImmortalWrt/build_dir # 编译工具链、中间目标文件
             ImmortalWrt/staging_dir # 编译工具链、中间目标文件
             ImmortalWrt/feeds # 软件包feeds
             ImmortalWrt/tmp # 临时编译文件
@@ -106,6 +107,7 @@ jobs:
           path: |
             ImmortalWrt/bin
             ImmortalWrt/dl # 下载的源码包（最核心，必缓存）
+            ImmortalWrt/build_dir # 编译工具链、中间目标文件
             ImmortalWrt/staging_dir # 编译工具链、中间目标文件
             ImmortalWrt/feeds # 软件包feeds
             ImmortalWrt/tmp # 临时编译文件
