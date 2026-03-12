@@ -66,7 +66,7 @@ jobs:
         if: steps.openwrt-cache.outputs.cache-hit == 'true' # 仅缓存命中时执行
         run: |
           # 递归更新缓存目录的时间戳为当前时间
-          touch -c -r ./ImmortalWrt/bin ./ImmortalWrt/dl/* ./ImmortalWrt/build_dir/* ./ImmortalWrt/staging_dir/* ./ImmortalWrt/feeds/* 2>/dev/null || true
+          touch -c -r ImmortalWrt/.config ./ImmortalWrt/bin ./ImmortalWrt/dl/* ./ImmortalWrt/build_dir/* ./ImmortalWrt/staging_dir/* ./ImmortalWrt/feeds/* 2>/dev/null || true
           # 兜底：直接更新目录本身的时间戳（避免文件不存在导致报错）
           touch -d "now" ./ImmortalWrt/bin ./ImmortalWrt/dl ./ImmortalWrt/build_dir ./ImmortalWrt/staging_dir ./ImmortalWrt/feeds ./ImmortalWrt/tmp
           # 验证：打印关键文件的时间戳（可选，用于调试）
