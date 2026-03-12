@@ -60,6 +60,22 @@ jobs:
             ImmortalWrt/tmp # 临时编译文件
           key: ${{ runner.os }}-openwrt
 
+
+      # 关键步骤：缓存恢复后，强制更新缓存目录的时间戳（保证比源码/配置新）
+      - name: Update cache files timestamp (ensure freshness)
+        if: steps.openwrt-cache.outputs.cache-hit == 'true' # 仅缓存命中时执行
+        run: |
+          # 递归更新缓存目录的时间戳为当前时间
+          touch -c -r ./ImmortalWrt/bin ./ImmortalWrt/dl/* ./ImmortalWrt/build_dir/* ./ImmortalWrt/staging_dir/* ./ImmortalWrt/feeds/* 2>/dev/null || true
+          # 兜底：直接更新目录本身的时间戳（避免文件不存在导致报错）
+          touch -d "now" ./ImmortalWrt/bin ./ImmortalWrt/dl ./ImmortalWrt/build_dir ./ImmortalWrt/staging_dir ./ImmortalWrt/feeds ./ImmortalWrt/tmp
+          # 验证：打印关键文件的时间戳（可选，用于调试）
+          echo "=== Timestamp of key files ==="
+          ls -l ./ImmortalWrt/.config | awk '{print $6, $7, $8, $9}'
+          ls -l ./ImmortalWrt/dl | head -n 2 | awk '{print $6, $7, $8, $9}'
+          ls -l ./ImmortalWrt/staging_dir | head -n 2 | awk '{print $6, $7, $8, $9}'
+          
+
       - name: 复制当前仓库的配置文件到 ImmortalWrt 仓库  (Copy current repo config to ImmortalWrt repo)
         run: cp -f .config feeds.conf.default diy.sh ImmortalWrt/
 
