@@ -52,10 +52,11 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: |
-            ./ImmortalWrt/dl # 下载的源码包（最核心，必缓存）
-            ./ImmortalWrt/staging_dir # 编译工具链、中间目标文件
-            ./ImmortalWrt/feeds # 软件包feeds
-            ./ImmortalWrt/tmp # 临时编译文件
+            ImmortalWrt/bin
+            ImmortalWrt/dl # 下载的源码包（最核心，必缓存）
+            ImmortalWrt/staging_dir # 编译工具链、中间目标文件
+            ImmortalWrt/feeds # 软件包feeds
+            ImmortalWrt/tmp # 临时编译文件
           key: ${{ runner.os }}-openwrt
 
       - name: 复制当前仓库的配置文件到 ImmortalWrt 仓库  (Copy current repo config to ImmortalWrt repo)
@@ -98,14 +99,16 @@ jobs:
         run: make -j1 V=s
 
       - name: save cache
+        if: always()
         id: openwrt-cache-save
         uses: actions/cache/save@v5
         with:
           path: |
-            ./ImmortalWrt/dl # 下载的源码包（最核心，必缓存）
-            ./ImmortalWrt/staging_dir # 编译工具链、中间目标文件
-            ./ImmortalWrt/feeds # 软件包feeds
-            ./ImmortalWrt/tmp # 临时编译文件
+            ImmortalWrt/bin
+            ImmortalWrt/dl # 下载的源码包（最核心，必缓存）
+            ImmortalWrt/staging_dir # 编译工具链、中间目标文件
+            ImmortalWrt/feeds # 软件包feeds
+            ImmortalWrt/tmp # 临时编译文件
           key: ${{ steps.openwrt-cache.outputs.cache-primary-key }}
 
       - name: 上传编译结果到 Artifact (Upload build result to Artifact)
