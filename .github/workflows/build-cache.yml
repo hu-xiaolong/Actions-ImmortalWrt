@@ -46,14 +46,6 @@ jobs:
           repository: '${{inputs.owner}}/${{inputs.repo}}'
           ref: ${{inputs.branch}}
           path: ImmortalWrt
-
-      - name: Cache
-        uses: stupidloud/cachewrtbuild@main
-        with:
-          ccache: 'true'
-          mixkey: 'openwrt-cache'
-          clean: 'false'
-          prefix: ImmortalWrt
           
       - name: 复制当前仓库的配置文件到 ImmortalWrt 仓库  (Copy current repo config to ImmortalWrt repo)
         run: cp -f .config feeds.conf.default diy.sh ImmortalWrt/
@@ -72,7 +64,14 @@ jobs:
         if: ${{inputs.ssh == true}}
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 15
-
+        
+      - name: Cache
+        uses: stupidloud/cachewrtbuild@main
+        with:
+          ccache: 'true'
+          clean: 'false'
+          prefix: ImmortalWrt
+          
       - name: 编译前上传配置 (Upload config before build)
         uses: actions/upload-artifact@v4
         with:
