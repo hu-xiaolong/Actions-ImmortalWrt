@@ -47,41 +47,17 @@ jobs:
           ref: ${{inputs.branch}}
           path: ImmortalWrt
 
-      - name: restore cached
-        id: openwrt-cache
-        uses: actions/cache/restore@v5
+      - name: Cache
+        uses: stupidloud/cachewrtbuild@main
         with:
-          path: |
-            ImmortalWrt/bin
-            ImmortalWrt/dl # 下载的源码包（最核心，必缓存）
-            ImmortalWrt/build_dir # 编译工具链、中间目标文件
-            ImmortalWrt/staging_dir # 编译工具链、中间目标文件
-            ImmortalWrt/feeds # 软件包feeds
-            ImmortalWrt/tmp # 临时编译文件
-          key: ${{ runner.os }}-openwrt
+          ccache: 'true'
+          mixkey: 'openwrt-cache'
+          clean: 'false'
+          prefix: ImmortalWrt
           
       - name: 复制当前仓库的配置文件到 ImmortalWrt 仓库  (Copy current repo config to ImmortalWrt repo)
         run: cp -f .config feeds.conf.default diy.sh ImmortalWrt/
         
-      - name: 开启 SSH 服务 (Start SSH service)
-        if: ${{inputs.ssh == true}}
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 15
-
-      # 关键步骤：缓存恢复后，强制更新缓存目录的时间戳（保证比源码/配置新）
-      - name: Update cache files timestamp (ensure freshness)
-        if: steps.openwrt-cache.outputs.cache-hit == 'true' # 仅缓存命中时执行
-        run: |
-          # 递归更新缓存目录的时间戳为当前时间
-          touch -c -r ImmortalWrt/.config ./ImmortalWrt/bin ./ImmortalWrt/dl/* ./ImmortalWrt/build_dir/* ./ImmortalWrt/staging_dir/* ./ImmortalWrt/feeds/* 2>/dev/null || true
-          # 兜底：直接更新目录本身的时间戳（避免文件不存在导致报错）
-          touch -d "now" ./ImmortalWrt/bin ./ImmortalWrt/dl ./ImmortalWrt/build_dir ./ImmortalWrt/staging_dir ./ImmortalWrt/feeds ./ImmortalWrt/tmp
-          # 验证：打印关键文件的时间戳（可选，用于调试）
-          echo "=== Timestamp of key files ==="
-          ls -l ./ImmortalWrt/.config     # | awk '{print $6, $7, $8, $9}'
-          ls -l ./ImmortalWrt/dl          # | head -n 2 | awk '{print $6, $7, $8, $9}'
-          ls -l ./ImmortalWrt/staging_dir # | head -n 2 | awk '{print $6, $7, $8, $9}'
-          
       - name: 运行 diy.sh (Run diy.sh)
         working-directory: ImmortalWrt
         run: |
@@ -92,8 +68,10 @@ jobs:
         working-directory: ImmortalWrt
         run: ./scripts/feeds update -a && ./scripts/feeds install -a
 
-      # - name: 再次复制当前仓库的配置文件到 ImmortalWrt 仓库 (Copy current repo config to ImmortalWrt repo again)
-      #  run: cp -f .config feeds.conf.default diy.sh ImmortalWrt/
+      - name: 开启 SSH 服务 (Start SSH service)
+        if: ${{inputs.ssh == true}}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 15
 
       - name: 编译前上传配置 (Upload config before build)
         uses: actions/upload-artifact@v4
@@ -112,20 +90,6 @@ jobs:
         if: ${{inputs.multithreading == false}}
         working-directory: ImmortalWrt
         run: make -j1 V=s
-
-      - name: save cache
-        if: always()
-        id: openwrt-cache-save
-        uses: actions/cache/save@v5
-        with:
-          path: |
-            ImmortalWrt/bin
-            ImmortalWrt/dl # 下载的源码包（最核心，必缓存）
-            ImmortalWrt/build_dir # 编译工具链、中间目标文件
-            ImmortalWrt/staging_dir # 编译工具链、中间目标文件
-            ImmortalWrt/feeds # 软件包feeds
-            ImmortalWrt/tmp # 临时编译文件
-          key: ${{ steps.openwrt-cache.outputs.cache-primary-key }}
 
       - name: 上传编译结果到 Artifact (Upload build result to Artifact)
         uses: actions/upload-artifact@v4
