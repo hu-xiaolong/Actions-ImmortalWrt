@@ -90,6 +90,18 @@ jobs:
         working-directory: ImmortalWrt
         run: make -j1 V=s
 
+      # 上传固件关键输出
+      - name: 上传固件文件 (Upload firmware files)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ImmortalWrt-firmware
+          path: |
+            ImmortalWrt/bin/targets/**/*.qcow2
+            ImmortalWrt/bin/targets/**/*.buildinfo
+            ImmortalWrt/.config
+            ImmortalWrt/feeds.conf.default
+          if-no-files-found: warn
+          
       - name: 上传编译结果到 Artifact (Upload build result to Artifact)
         uses: actions/upload-artifact@v4
         with:
