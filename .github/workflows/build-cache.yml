@@ -59,11 +59,6 @@ jobs:
       - name: 更新并下载 feeds (Update and download feeds)
         working-directory: ImmortalWrt
         run: ./scripts/feeds update -a && ./scripts/feeds install -a
-
-      - name: 开启 SSH 服务 (Start SSH service)
-        if: ${{inputs.ssh == true}}
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 15
         
       - name: Cache
         uses: stupidloud/cachewrtbuild@main
@@ -71,6 +66,11 @@ jobs:
           ccache: 'true'
           clean: 'false'
           prefix: ImmortalWrt
+          
+      - name: 开启 SSH 服务 (Start SSH service)
+        if: ${{inputs.ssh == true}}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 20
           
       - name: 编译前上传配置 (Upload config before build)
         uses: actions/upload-artifact@v4
